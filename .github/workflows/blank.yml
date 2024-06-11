@@ -14,13 +14,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud
+        uses: google-github-actions/setup-gcloud@v1
         with:
           version: 'latest'
 
       - name: Configure gcloud
         run: |
-          gcloud config set project caramel-compass-356721
+          gcloud config set project YOUR_PROJECT_ID
 
       - name: Deploy VM instance
         run: |
