@@ -10,8 +10,12 @@ on:
         description: 'Name of the VM instance to delete'
         required: true
       zone:
-        description: 'Zone of the VM instance to delete'
+        description: 'Zone of the VM instance to create'
         required: true
+        type: choice
+        options:
+          - us-east4-a
+          - us-east4-b
 
 jobs:
   delete:
