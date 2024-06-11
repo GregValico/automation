@@ -1,9 +1,21 @@
 name: Deploy GCP VM
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Name of the GCP Project'
+        required: true
+      vm_name:
+        description: 'Name of the VM instance to create'
+        required: true
+      zone:
+        description: 'Zone of the VM instance to create'
+        required: true
+        type: choice
+        options:
+          - us-east4-a
+          - us-east4-b
 
 jobs:
   deploy:
@@ -20,13 +32,13 @@ jobs:
 
       - name: Configure gcloud
         run: |
-          gcloud config set project caramel-compass-356721
+          gcloud config set project ${{ inputs.project_name }}
 
       - name: Deploy VM instance
         run: |
-          gcloud compute instances create instance-20240611-014834 \
-            --project=caramel-compass-356721 \
-            --zone=us-east4-a \
+          gcloud compute instances create ${{ inputs.vm_name }} \
+            --project=${{ inputs.project_name }} \
+            --zone=${{ inputs.zone }} \
             --machine-type=e2-small \
             --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
             --maintenance-policy=MIGRATE \
@@ -34,7 +46,7 @@ jobs:
             --service-account=490265230900-compute@developer.gserviceaccount.com \
             --scopes=https://www.googleapis.com/auth/cloud-platform \
             --tags=http-server,https-server \
-            --create-disk=auto-delete=yes,boot=yes,device-name=instance-20240611-014834,image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=10,type=projects/caramel-compass-356721/zones/us-east4-a/diskTypes/pd-balanced \
+            --create-disk=auto-delete=yes,boot=yes,device-name=${{ inputs.vm_name }},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=10,type=projects/caramel-compass-356721/zones/us-east4-a/diskTypes/pd-balanced \
             --no-shielded-secure-boot \
             --shielded-vtpm \
             --shielded-integrity-monitoring \
