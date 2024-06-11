@@ -1,9 +1,17 @@
 name: Delete GCP VM
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Name of the GCP Project'
+        required: true
+      vm_name:
+        description: 'Name of the VM instance to delete'
+        required: true
+      zone:
+        description: 'Zone of the VM instance to delete'
+        required: true
 
 jobs:
   delete:
@@ -20,8 +28,8 @@ jobs:
 
       - name: Configure gcloud
         run: |
-          gcloud config set project caramel-compass-356721
+          gcloud config set project ${{ inputs.project_name }}
 
       - name: Delete VM instance
         run: |
-          gcloud compute instances delete instance-20240611-014834 --zone=us-east4-a --quiet
+          gcloud compute instances delete ${{ inputs.vm_name }} --zone=${{ inputs.zone }} --quiet
