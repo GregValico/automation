@@ -39,7 +39,7 @@ jobs:
             exit 1
           fi
 
-          echo "::set-output name=zone::$VM_ZONE"
+       #   echo "::set-output name=zone::$VM_ZONE"
 
       - name: Delete VM instance
         run: |
