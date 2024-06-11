@@ -1,0 +1,27 @@
+name: Delete GCP VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  delete:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: 'latest'
+
+      - name: Configure gcloud
+        run: |
+          gcloud config set project caramel-compass-356721
+
+      - name: Delete VM instance
+        run: |
+          gcloud compute instances delete instance-20240611-014834 --zone=us-east4-a --quiet
