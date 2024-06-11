@@ -9,13 +9,6 @@ on:
       vm_name:
         description: 'Name of the VM instance to delete'
         required: true
-      zone:
-        description: 'Zone of the VM instance to create'
-        required: true
-        type: choice
-        options:
-          - us-east4-a
-          - us-east4-b
 
 jobs:
   delete:
@@ -34,6 +27,22 @@ jobs:
         run: |
           gcloud config set project ${{ inputs.project_name }}
 
+      - name: Get VM Zone
+        id: get-vm-zone
+        run: |
+          VM_ZONE=$(gcloud compute instances list \
+            --filter="name=${{ inputs.vm_name }}" \
+            --format="value(zone)")
+        
+          if [ -z "$VM_ZONE" ]; then
+            echo "VM not found or you don't have permission to access it."
+            exit 1
+          fi
+
+          echo "::set-output name=zone::$VM_ZONE"
+
       - name: Delete VM instance
         run: |
-          gcloud compute instances delete ${{ inputs.vm_name }} --zone=${{ inputs.zone }} --quiet
+          VM_ZONE=${{ steps.get-vm-zone.outputs.zone }}
+          
+          gcloud compute instances delete ${{ inputs.vm_name }} --zone="$VM_ZONE" --quiet
