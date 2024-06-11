@@ -20,7 +20,7 @@ jobs:
 
       - name: Configure gcloud
         run: |
-          gcloud config set project YOUR_PROJECT_ID
+          gcloud config set project caramel-compass-356721
 
       - name: Deploy VM instance
         run: |
