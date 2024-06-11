@@ -39,10 +39,10 @@ jobs:
             exit 1
           fi
 
-          echo "::set-output name=zone::$VM_ZONE"
+          echo "VM_ZONE=$VM_ZONE" >> $GITHUB_ENV
 
       - name: Delete VM instance
         run: |
-          VM_ZONE=${{ steps.get-vm-zone.outputs.zone }}
+          VM_ZONE=${{ env.VM_ZONE }}
           
           gcloud compute instances delete ${{ inputs.vm_name }} --zone="$VM_ZONE" --quiet
