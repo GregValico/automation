@@ -43,7 +43,7 @@ jobs:
             --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
             --maintenance-policy=MIGRATE \
             --provisioning-model=STANDARD \
-            --service-account=490265230900-compute@developer.gserviceaccount.com \
+            --service-account=${{ secrets.gcp_sa }} \
             --scopes=https://www.googleapis.com/auth/cloud-platform \
             --tags=http-server,https-server \
             --create-disk=auto-delete=yes,boot=yes,device-name=${{ inputs.vm_name }},image=projects/debian-cloud/global/images/debian-12-bookworm-v20240515,mode=rw,size=10,type=projects/caramel-compass-356721/zones/us-east4-a/diskTypes/pd-balanced \
