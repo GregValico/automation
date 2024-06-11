@@ -1,0 +1,32 @@
+name: Deploy GCP VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          version: 'latest'
+
+      - name: Configure gcloud
+        run: |
+          gcloud config set project caramel-compass-356721
+
+      - name: Deploy VM instance
+        run: |
+          gcloud compute instances create vm-instance-1 \
+            --zone=us-central1-a \
+            --machine-type=f1-micro \
+            --image-family=debian-10 \
+            --image-project=debian-cloud \
+            --boot-disk-size=10GB
