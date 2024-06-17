@@ -52,7 +52,7 @@ jobs:
         run: |
           gcloud beta container --project "${{ inputs.project_name }}" clusters create "${{ inputs.cluster_name }}" \
               --region "${{ inputs.region }}" \
-              --no-enable-basic-auth \ 
+              --no-enable-basic-auth \
               --cluster-version "1.29.4-gke.1043002" \
               --release-channel "regular" \
               --machine-type "e2-small" \
