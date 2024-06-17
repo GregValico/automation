@@ -91,4 +91,5 @@ jobs:
               --binauthz-evaluation-mode=DISABLED \
               --enable-managed-prometheus \
               --workload-pool "caramel-compass-356721.svc.id.goog" \
-              --enable-shielded-nodes
+              --enable-shielded-nodes \
+              --verbosity=info
