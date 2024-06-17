@@ -50,7 +50,7 @@ jobs:
 
       - name: Deploy GKE cluster
         run: |
-          yes | gcloud beta container --project "${{ inputs.project_name }}" clusters create "${{ inputs.cluster_name }}" --quiet \
+          gcloud beta container --project "${{ inputs.project_name }}" clusters create "${{ inputs.cluster_name }}" --quiet \
             --region "${{ inputs.region }}" \
             --no-enable-basic-auth \ 
             --cluster-version "1.29.4-gke.1043002" \
