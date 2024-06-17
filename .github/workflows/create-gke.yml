@@ -43,10 +43,10 @@ jobs:
         run: |
           gcloud config set project ${{ inputs.project_name }}
 
-      - name: Create Static IP
-        run: |
-          gcloud config set project ${{ inputs.project_name }}
-          gcloud compute addresses create static-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --subnet=${{ inputs.subnet_name }}
+  #    - name: Create Static IP
+  #      run: |
+  #        gcloud config set project ${{ inputs.project_name }}
+  #        gcloud compute addresses create static-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --subnet=${{ inputs.subnet_name }}
 
       - name: Deploy GKE cluster
         run: |
