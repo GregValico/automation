@@ -102,3 +102,43 @@ jobs:
               --workload-pool "${{ inputs.project_name }}.svc.id.goog" \
               --enable-shielded-nodes \
               --verbosity=info
+
+      - name: Depoloy GKE Jump Host
+        run: |
+          gcloud compute instances create gke-jump-${{ inputs.cluster_name }} \
+              --project=${{ inputs.project_name }} \
+              --zone=${{ inputs.region }}-a \
+              --machine-type=e2-medium \
+              --network-interface=network-tier=PREMIUM,nic-type=VIRTIO_NET,stack-type=IPV4_ONLY,subnet=${{ inputs.subnet_name }} \
+              --metadata=enable-oslogin=true \
+              --maintenance-policy=MIGRATE \
+              --provisioning-model=STANDARD \
+              --service-account=${{ secrets.gcp_sa }} \
+              --scopes=https://www.googleapis.com/auth/cloud-platform \
+              --tags=http-server,https-server \
+              --create-disk=auto-delete=yes,boot=yes,device-name=gke-jump,image=projects/debian-cloud/global/images/debian-12-bookworm-v20240617,mode=rw,size=10,type=projects/${{ inputs.project_name }}/zones/${{ inputs.region }}-a/diskTypes/pd-balanced \
+              --no-shielded-secure-boot \
+              --shielded-vtpm \
+              --shielded-integrity-monitoring \
+              --labels=goog-ec-src=vm_add-gcloud \
+              --reservation-affinity=any
+              
+      - name: SSH to Jump   
+        run: |
+          gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}"
+      
+      - name: Install Jump Tools 
+        run: |
+          sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get install -y google-cloud-sdk
+          sudo apt-get install google-cloud-cli
+          sudo apt upgrade -y
+          sudo apt dist-upgrade -y
+          sudo apt-get install kubectl
+          sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin
+          
+      - name: Install Cluster Tools
+        run: |
+          gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
+          kubectl create ns test
