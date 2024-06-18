@@ -18,6 +18,14 @@ on:
         type: choice
         options:
           - us-east4
+      machine_type:
+        description: 'Node machine type'
+        required: false
+        default: "e2-small"
+        type: choice
+        options:
+          - e2-medium
+          - c2-standard-8
 
 jobs:
   deploy:
