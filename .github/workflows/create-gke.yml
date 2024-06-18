@@ -99,6 +99,6 @@ jobs:
               --maintenance-window-recurrence "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU" \
               --binauthz-evaluation-mode=DISABLED \
               --enable-managed-prometheus \
-              --workload-pool "caramel-compass-356721.svc.id.goog" \
+              --workload-pool "${{ inputs.project_name }}.svc.id.goog" \
               --enable-shielded-nodes \
               --verbosity=info
