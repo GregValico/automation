@@ -1,4 +1,4 @@
-name: Deploy GKE cluster
+name: Bootstrap GKE cluster
 
 on:
   workflow_dispatch:
