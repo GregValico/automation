@@ -63,7 +63,7 @@ jobs:
               --region "${{ inputs.region }}" \
               --no-enable-basic-auth \
               --cluster-version "1.29.4-gke.1043002" \
-              --release-channel "stable" \
+              --release-channel "regular" \
               --machine-type "e2-small" \
               --image-type "COS_CONTAINERD" \
               --disk-type "pd-balanced" \
