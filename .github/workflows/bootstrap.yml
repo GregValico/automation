@@ -1,0 +1,63 @@
+name: Deploy GKE cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Name of the GCP Project'
+        required: true
+      cluster_name:
+        description: 'Name of GKE cluster'
+        required: true
+      subnet_name:
+        description: 'Node subnet name'
+        required: true
+      region:
+        description: 'Region of the GKE cluster'
+        required: true
+        type: choice
+        options:
+          - us-east4
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: 'latest'
+
+      - name: Install gcloud beta components
+        run: |
+          sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get install -y google-cloud-sdk
+          gcloud components install beta --quiet
+
+      - name: Configure gcloud
+        run: |
+          gcloud config set project ${{ inputs.project_name }}
+
+      - name: SSH and Install Jump Tools 
+        run: |
+          sleep 60
+          gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command "
+          sleep 20
+          sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get install -y google-cloud-sdk
+          sudo apt-get install google-cloud-cli
+          sudo apt upgrade -y
+          sudo apt dist-upgrade -y
+          sudo apt-get install kubectl
+          sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin
+          sleep 15
+          gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
+          sleep 20
+          kubectl create ns test
+          "
