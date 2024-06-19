@@ -1,0 +1,198 @@
+name: New Deploy GKE cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Name of the GCP Project'
+        required: true
+      cluster_name:
+        description: 'Name of GKE cluster'
+        required: true
+      subnet_name:
+        description: 'Node subnet name'
+        required: true
+      region:
+        description: 'Region of the GKE cluster'
+        required: true
+        type: choice
+        options:
+          - us-east4
+      machine_type:
+        description: '(Optional) Node machine type'
+        required: false
+        default: e2-small
+        type: choice
+        options:
+          - ''
+          - e2-medium
+          - c2-standard-8
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: 'latest'
+
+      - name: Install gcloud beta components
+        run: |
+          sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get install -y google-cloud-sdk
+          gcloud components install beta --quiet
+
+      - name: Configure gcloud
+        run: |
+          gcloud config set project ${{ inputs.project_name }}
+
+  #    - name: Create Static IP
+  #      run: |
+  #        gcloud config set project ${{ inputs.project_name }}
+  #        gcloud compute addresses create static-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --subnet=${{ inputs.subnet_name }}
+
+      - name: Deploy GKE cluster
+        run: |
+          gcloud beta container --project "${{ inputs.project_name }}" clusters create "${{ inputs.cluster_name }}" \
+              --region "${{ inputs.region }}" \
+              --no-enable-basic-auth \
+              --cluster-version "1.29.4-gke.1043002" \
+              --release-channel "regular" \
+              --machine-type "e2-small" \
+              --image-type "COS_CONTAINERD" \
+              --disk-type "pd-balanced" \
+              --disk-size "50" \
+              --metadata disable-legacy-endpoints=true \
+              --scopes "https://www.googleapis.com/auth/cloud-platform" \
+              --max-pods-per-node "30" \
+              --num-nodes "1" \
+              --logging=SYSTEM,WORKLOAD \
+              --monitoring=SYSTEM \
+              --enable-private-nodes \
+              --enable-private-endpoint \
+              --private-endpoint-subnetwork="projects/${{ inputs.project_name }}/regions/${{ inputs.region }}/subnetworks/${{ inputs.subnet_name }}" \
+              --enable-ip-alias \
+              --network "projects/${{ inputs.project_name }}/global/networks/vpc-for-gke" \
+              --subnetwork "projects/${{ inputs.project_name }}/regions/${{ inputs.region }}/subnetworks/${{ inputs.subnet_name }}" \
+              --cluster-secondary-range-name "gke-pods" \
+              --services-secondary-range-name "gke-svcs" \
+              --no-enable-intra-node-visibility \
+              --default-max-pods-per-node "30" \
+              --enable-autoscaling --min-nodes "0" --max-nodes "1" \
+              --location-policy "BALANCED" \
+              --security-posture=standard \
+              --workload-vulnerability-scanning=disabled \
+              --enable-master-authorized-networks \
+              --addons HorizontalPodAutoscaling,GcePersistentDiskCsiDriver \
+              --enable-autoupgrade \
+              --enable-autorepair \
+              --max-surge-upgrade 1 \
+              --max-unavailable-upgrade 0 \
+              --maintenance-window-start "2024-06-16T06:00:00Z" \
+              --maintenance-window-end "2024-06-16T11:00:00Z" \
+              --maintenance-window-recurrence "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU" \
+              --binauthz-evaluation-mode=DISABLED \
+              --enable-managed-prometheus \
+              --workload-pool "${{ inputs.project_name }}.svc.id.goog" \
+              --enable-shielded-nodes \
+              --verbosity=info
+
+      - name: Depoloy GKE Jump Host
+        run: |
+          gcloud compute instances create gke-jump-${{ inputs.cluster_name }} \
+              --project=${{ inputs.project_name }} \
+              --zone=${{ inputs.region }}-a \
+              --machine-type=e2-medium \
+              --network-interface=network-tier=PREMIUM,nic-type=VIRTIO_NET,stack-type=IPV4_ONLY,subnet=${{ inputs.subnet_name }} \
+              --metadata=enable-oslogin=true \
+              --maintenance-policy=MIGRATE \
+              --provisioning-model=STANDARD \
+              --service-account=${{ secrets.gcp_sa }} \
+              --scopes=https://www.googleapis.com/auth/cloud-platform \
+              --tags=http-server,https-server \
+              --create-disk=auto-delete=yes,boot=yes,device-name=gke-jump,image=projects/debian-cloud/global/images/debian-12-bookworm-v20240617,mode=rw,size=10,type=projects/${{ inputs.project_name }}/zones/${{ inputs.region }}-a/diskTypes/pd-balanced \
+              --no-shielded-secure-boot \
+              --shielded-vtpm \
+              --shielded-integrity-monitoring \
+              --labels=goog-ec-src=vm_add-gcloud \
+              --reservation-affinity=any
+              
+      - name: SSH and Install Jump Tools 
+        run: |
+          sleep 60
+          gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command '
+            sleep 20
+            sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            sudo apt-get install -y google-cloud-sdk
+            sudo apt-get install -y google-cloud-cli
+            sudo apt upgrade -y
+            sudo apt dist-upgrade -y
+            sudo apt-get install -y kubectl
+            sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+            sleep 15
+            gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
+            sleep 20
+            kubectl create ns test
+            kubectl create ns argocd
+            
+            #!/bin/bash
+
+            cat <<EOF | kubectl apply -f -
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: nginx-deployment
+              labels:
+                app: nginx
+            spec:
+              replicas: 3
+              selector:
+                matchLabels:
+                  app: nginx
+              template:
+                metadata:
+                  labels:
+                    app: nginx
+                spec:
+                  containers:
+                  - name: nginx
+                    image: nginx:latest
+                    ports:
+                    - containerPort: 80
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: nginx-service
+              labels:
+                app: nginx
+            spec:
+              type: LoadBalancer
+              ports:
+              - port: 80
+                targetPort: 80
+              selector:
+                app: nginx
+            EOF
+
+            
+            sleep 60
+
+            
+            LOAD_BALANCER_IP=$(kubectl get svc nginx-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+            
+            echo "LoadBalancer IP: $LOAD_BALANCER_IP"
+
+            
+            echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
+          '
+        - name: Output LoadBalancer IP
+          run: echo "The LoadBalancer IP is ${{ env.LOAD_BALANCER_IP }}"
