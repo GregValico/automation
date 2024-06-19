@@ -62,8 +62,8 @@ jobs:
             # kubectl create ns test
             # kubectl create ns argocd
 
-            kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
-            kubectl create service loadbalancer nginx-service --tcp=80:80 --selector=app=nginx -n test
+            # kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
+            kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 -n test
 
             sleep 60
 
