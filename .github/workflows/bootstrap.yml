@@ -32,12 +32,12 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Install gcloud beta components
-        run: |
-          sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
-          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get install -y google-cloud-sdk
-          gcloud components install beta --quiet
+      # - name: Install gcloud beta components
+      #   run: |
+      #     sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+      #     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+      #     sudo apt-get install -y google-cloud-sdk
+      #     gcloud components install beta --quiet
 
       - name: Configure gcloud
         run: |
@@ -46,17 +46,65 @@ jobs:
       - name: SSH and Install Jump Tools 
         run: |
           gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command '
-            sleep 20
-            sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
-            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-            sudo apt-get install -y google-cloud-sdk
-            sudo apt-get install -y google-cloud-cli
-            sudo apt upgrade -y
-            sudo apt dist-upgrade -y
-            sudo apt-get install -y kubectl
-            sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+            # sleep 20
+            # sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+            # echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            # sudo apt-get update && sudo apt-get install -y google-cloud-sdk google-cloud-cli kubectl google-cloud-cli-gke-gcloud-auth-plugin
+            # sudo apt upgrade -y
+            # sudo apt dist-upgrade -y
+
             sleep 15
+
             gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
+            
             sleep 20
-            kubectl create ns test
+
+            # kubectl create ns test
+            # kubectl create ns argocd
+
+            cat <<EOF | kubectl apply -f -
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: nginx-deployment
+              labels:
+                app: nginx
+            spec:
+              replicas: 3
+              selector:
+                matchLabels:
+                  app: nginx
+              template:
+                metadata:
+                  labels:
+                    app: nginx
+                spec:
+                  containers:
+                  - name: nginx
+                    image: nginx:latest
+                    ports:
+                    - containerPort: 80
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: nginx-service
+              labels:
+                app: nginx
+            spec:
+              type: LoadBalancer
+              ports:
+              - port: 80
+                targetPort: 80
+              selector:
+                app: nginx
+            EOF
+
+            sleep 60
+
+            LOAD_BALANCER_IP=$(kubectl get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+
+            echo "LoadBalancer IP: \$LOAD_BALANCER_IP"
+
+            echo "LOAD_BALANCER_IP=\$LOAD_BALANCER_IP" >> $GITHUB_ENV
           '
