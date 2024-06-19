@@ -64,6 +64,7 @@ jobs:
             kind: Deployment
             metadata:
               name: nginx-deployment
+              namespace: test
               labels:
                 app: nginx
             spec:
@@ -87,6 +88,7 @@ jobs:
             kind: Service
             metadata:
               name: nginx-service
+              namespace: test
               labels:
                 app: nginx
               annotations:
