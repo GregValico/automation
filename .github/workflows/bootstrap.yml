@@ -63,7 +63,7 @@ jobs:
             kubectl create ns argocd
 
             kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
-            kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 --namespace=test --annotation cloud.google.com/load-balancer-type=Internal
+            kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 --namespace=test --annotations cloud.google.com/load-balancer-type=Internal
 
 
              sleep 75
