@@ -46,26 +46,27 @@ jobs:
       - name: SSH and Install Jump Tools 
         run: |
           gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command '
-            # sleep 20
-            # sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
-            # echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-            # sudo apt-get update && sudo apt-get install -y google-cloud-sdk google-cloud-cli kubectl google-cloud-cli-gke-gcloud-auth-plugin
-            # sudo apt upgrade -y
-            # sudo apt dist-upgrade -y
+            sleep 20
+            sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
+            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            sudo apt-get update && sudo apt-get install -y google-cloud-sdk google-cloud-cli kubectl google-cloud-cli-gke-gcloud-auth-plugin
+            sudo apt upgrade -y
+            sudo apt dist-upgrade -y
 
-            sleep 10
+            sleep 30
 
             gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
             
-            sleep 5
+            sleep 25
 
-            # kubectl create ns test
-            # kubectl create ns argocd
+            kubectl create ns test
+            kubectl create ns argocd
 
-            # kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
-            # kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 -n test
+            kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
+            kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 --namespace=test --annotation cloud.google.com/load-balancer-type=Internal
 
-            # sleep 60
+
+             sleep 75
 
             kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}" > /tmp/load_balancer_ip.txt
           '
