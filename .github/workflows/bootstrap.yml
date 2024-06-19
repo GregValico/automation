@@ -98,15 +98,15 @@ jobs:
               selector:
                 app: nginx
           EOF
-
-            sleep 60
-
-            kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}" > /tmp/load_balancer_ip.txt
-
-            LOAD_BALANCER_IP=$(gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command "cat /tmp/load_balancer_ip.txt")
-
-            echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
           '
 
       - name: Output LoadBalancer IP
-        run: echo "The LoadBalancer IP is ${{ env.LOAD_BALANCER_IP }}"
+        run: |
+          gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command '
+            sleep 60
+
+            LOAD_BALANCER_IP=$(kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+
+            echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
+            echo "The LoadBalancer IP is ${{ env.LOAD_BALANCER_IP }}"
+          '
