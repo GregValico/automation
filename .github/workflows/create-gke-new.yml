@@ -192,7 +192,7 @@ jobs:
                 app: nginx
           EOF
           
-            sleep 60
+            sleep 180
             kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}" > /tmp/load_balancer_ip.txt
           '
           LOAD_BALANCER_IP=$(gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command "cat /tmp/load_balancer_ip.txt")
