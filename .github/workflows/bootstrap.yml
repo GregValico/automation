@@ -63,11 +63,11 @@ jobs:
             # kubectl create ns argocd
 
             # kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
-            kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 -n test
+            # kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 -n test
 
             sleep 60
 
-            LOAD_BALANCER_IP=$(kubectl get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+            LOAD_BALANCER_IP=$(kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
 
             echo "LoadBalancer IP: \$LOAD_BALANCER_IP"
 
