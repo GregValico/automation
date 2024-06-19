@@ -130,25 +130,26 @@ jobs:
             sleep 20
             sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
             echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-            sudo apt-get install -y google-cloud-sdk
-            sudo apt-get install -y google-cloud-cli
+            sudo apt-get update && sudo apt-get install -y google-cloud-sdk google-cloud-cli kubectl google-cloud-cli-gke-gcloud-auth-plugin
             sudo apt upgrade -y
             sudo apt dist-upgrade -y
-            sudo apt-get install -y kubectl
-            sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-            sleep 15
-            gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
+
             sleep 20
-            kubectl create ns test
-            kubectl create ns argocd
+
+            gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
             
-            #!/bin/bash
+            sleep 20
+
+            gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
+            
+            kubectl create ns test
 
             cat <<EOF | kubectl apply -f -
             apiVersion: apps/v1
             kind: Deployment
             metadata:
               name: nginx-deployment
+              namespace: test
               labels:
                 app: nginx
             spec:
@@ -166,13 +167,17 @@ jobs:
                     image: nginx:latest
                     ports:
                     - containerPort: 80
-            ---
+          EOF
+            cat <<EOF | kubectl apply -f -
             apiVersion: v1
             kind: Service
             metadata:
               name: nginx-service
+              namespace: test
               labels:
                 app: nginx
+              annotations:
+               cloud.google.com/load-balancer-type: "Internal"
             spec:
               type: LoadBalancer
               ports:
@@ -180,19 +185,12 @@ jobs:
                 targetPort: 80
               selector:
                 app: nginx
-            EOF
-
-            
+          EOF
+          
             sleep 60
-
-            
-            LOAD_BALANCER_IP=$(kubectl get svc nginx-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-            
-            echo "LoadBalancer IP: $LOAD_BALANCER_IP"
-
-            
-            echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
+            kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}" > /tmp/load_balancer_ip.txt
           '
-      - name: Output LoadBalancer IP
-        run: echo "The LoadBalancer IP is ${{ env.LOAD_BALANCER_IP }}"
+          LOAD_BALANCER_IP=$(gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command "cat /tmp/load_balancer_ip.txt")
+          echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
+
+          echo $LOAD_BALANCER_IP
