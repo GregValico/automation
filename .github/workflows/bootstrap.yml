@@ -53,11 +53,11 @@ jobs:
             # sudo apt upgrade -y
             # sudo apt dist-upgrade -y
 
-            sleep 15
+            sleep 10
 
             gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
             
-            sleep 20
+            sleep 5
 
             # kubectl create ns test
             # kubectl create ns argocd
@@ -71,3 +71,5 @@ jobs:
           '
           LOAD_BALANCER_IP=$(gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command "cat /tmp/load_balancer_ip.txt")
           echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
+
+          echo $LOAD_BALANCER_IP
