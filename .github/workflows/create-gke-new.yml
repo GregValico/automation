@@ -194,5 +194,5 @@ jobs:
             
             echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
           '
-        - name: Output LoadBalancer IP
-          run: echo "The LoadBalancer IP is ${{ env.LOAD_BALANCER_IP }}"
+      - name: Output LoadBalancer IP
+        run: echo "The LoadBalancer IP is ${{ env.LOAD_BALANCER_IP }}"
