@@ -57,28 +57,56 @@ jobs:
 
             gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
             
-            sleep 25
+            kubectl create ns test
 
             cat <<EOF | kubectl apply -f -
-            apiVersion: v1
-            kind: Namespace
+            apiVersion: apps/v1
+            kind: Deployment
             metadata:
-              name: ${{ secrets.gke_ns }}
-
+              name: nginx-deployment
+              labels:
+                app: nginx
+            spec:
+              replicas: 3
+              selector:
+                matchLabels:
+                  app: nginx
+              template:
+                metadata:
+                  labels:
+                    app: nginx
+                spec:
+                  containers:
+                  - name: nginx
+                    image: nginx:latest
+                    ports:
+                    - containerPort: 80
+            ---
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: nginx-service
+              labels:
+                app: nginx
+              annotations:
+               cloud.google.com/load-balancer-type: "Internal"
+            spec:
+              type: LoadBalancer
+              ports:
+              - port: 80
+                targetPort: 80
+              selector:
+                app: nginx
           EOF
 
-            # kubectl create ns test
-            # kubectl create ns argocd
+            sleep 60
 
-            # kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
-            # kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 --namespace=test --annotations cloud.google.com/load-balancer-type=Internal
+            LOAD_BALANCER_IP=$(kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
 
+            echo "LoadBalancer IP: $LOAD_BALANCER_IP"
 
-             sleep 75
-
-            # kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}" > /tmp/load_balancer_ip.txt
+            echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
           '
-          # LOAD_BALANCER_IP=$(gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command "cat /tmp/load_balancer_ip.txt")
-          # echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
 
-          # echo $LOAD_BALANCER_IP
+      - name: Output LoadBalancer IP
+        run: echo "The LoadBalancer IP is ${{ env.LOAD_BALANCER_IP }}"
