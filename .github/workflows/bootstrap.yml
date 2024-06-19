@@ -65,7 +65,7 @@ jobs:
             metadata:
               name: test
 
-            EOF
+EOF
 
             # kubectl create ns test
             # kubectl create ns argocd
