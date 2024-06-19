@@ -65,11 +65,9 @@ jobs:
             # kubectl create deployment nginx-deployment --image=nginx --replicas=3 -n test
             # kubectl expose deployment nginx-deployment --type=LoadBalancer --name=nginx-service --port=80 --target-port=80 -n test
 
-            sleep 60
+            # sleep 60
 
-            LOAD_BALANCER_IP=$(kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
-
-            echo "LoadBalancer IP: \$LOAD_BALANCER_IP"
-
-            echo "LOAD_BALANCER_IP=\$LOAD_BALANCER_IP" >> $GITHUB_ENV
+            kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}" > /tmp/load_balancer_ip.txt
           '
+          LOAD_BALANCER_IP=$(gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command "cat /tmp/load_balancer_ip.txt")
+          echo "LOAD_BALANCER_IP=$LOAD_BALANCER_IP" >> $GITHUB_ENV
