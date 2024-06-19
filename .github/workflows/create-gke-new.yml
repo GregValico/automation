@@ -125,14 +125,19 @@ jobs:
               
       - name: SSH and Install Jump Tools 
         run: |
-          sleep 60
+          sleep 5
           gcloud compute ssh --zone "${{ inputs.region }}-a" "gke-jump-${{ inputs.cluster_name }}" --project "${{ inputs.project_name }}" --command '
             sleep 20
-            sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg
-            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-            sudo apt-get update && sudo apt-get install -y google-cloud-sdk google-cloud-cli kubectl google-cloud-cli-gke-gcloud-auth-plugin
-            sudo apt upgrade -y
-            sudo apt dist-upgrade -y
+            sudo apt-get update
+            sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
+            curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+            # Add the Google Cloud SDK repository
+            echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+
+            # Update package list and install Google Cloud SDK, kubectl, and GKE auth plugin
+            sudo apt-get update
+            sudo apt-get install -y google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin kubectl
 
             sleep 20
 
