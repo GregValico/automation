@@ -191,7 +191,7 @@ jobs:
               selector:
                 app: nginx
           EOF
-          
+            echo "Allowing 3 minutes for the Load Balancer IP to be assigned..."
             sleep 180
             kubectl -n test get svc nginx-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}" > /tmp/load_balancer_ip.txt
           '
