@@ -63,7 +63,7 @@ jobs:
             apiVersion: v1
             kind: Namespace
             metadata:
-              name: test
+              name: ${{ secrets.gke_ns }}
 
           EOF
 
