@@ -64,7 +64,7 @@ jobs:
               --no-enable-basic-auth \
               --cluster-version "1.29.4-gke.1043002" \
               --release-channel "regular" \
-              --machine-type "e2-small" \
+              --machine-type "${{ inputs.machine_type }}" \
               --image-type "COS_CONTAINERD" \
               --disk-type "pd-balanced" \
               --disk-size "50" \
