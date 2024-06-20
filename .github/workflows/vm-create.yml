@@ -16,6 +16,15 @@ on:
         options:
           - us-east4-a
           - us-east4-b
+      machine_type:
+        description: '(Optional) Machine type'
+        required: false
+        type: choice
+        default: e2-small
+        options:
+          - ''
+          - e2-medium
+          - c2-standard-8
 
 jobs:
   deploy:
@@ -39,7 +48,7 @@ jobs:
           gcloud compute instances create ${{ inputs.vm_name }} \
             --project=${{ inputs.project_name }} \
             --zone=${{ inputs.zone }} \
-            --machine-type=e2-small \
+            --machine-type=${{ inputs.machine_type }} \
             --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
             --maintenance-policy=MIGRATE \
             --provisioning-model=STANDARD \
