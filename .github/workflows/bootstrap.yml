@@ -62,7 +62,34 @@ jobs:
 
             kubectl get crds | grep 'istio.io'
             kubectl get pods -n istio-system
-            kubectl patch svc istio-ingressgateway -n istio-system -p '{"spec": {"type": "LoadBalancer"}}'
+
+            cat <<EOF > kubectl apply -f -
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: istio-ingressgateway
+              namespace: istio-system
+            spec:
+              type: LoadBalancer
+          EOF
+            cat <<EOF > kubectl apply -f -
+            apiVersion: networking.istio.io/v1alpha3
+            kind: Gateway
+            metadata:
+              name: my-gateway
+              namespace: istio-system
+            spec:
+              selector:
+                istio: ingressgateway # Use Istio default gateway implementation
+              servers:
+              - port:
+                  number: 80
+                  name: http
+                  protocol: HTTP
+                hosts:
+                - "*"
+          EOF
+            
             echo "Waiting for the LoadBalancer IP..."
             sleep 150
 
