@@ -18,7 +18,7 @@ on:
           - us-east4-b
       machine_type:
         description: '(Optional) Machine type'
-        required: false
+        required: true
         type: choice
         default: e2-small
         options:
