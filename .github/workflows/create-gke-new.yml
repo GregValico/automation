@@ -21,8 +21,8 @@ on:
       machine_type:
         description: '(Optional) Node machine type'
         required: false
-        default: e2-small
         type: choice
+        default: e2-small
         options:
           - ''
           - e2-medium
