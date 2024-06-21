@@ -37,6 +37,9 @@ jobs:
           gcloud config set project ${{ inputs.project_name }}
 
       - name: Describe Subnet 
+        env:
+          SUBNET_NAME: ${{ inputs.subnet_name }}
+          REGION: ${{ inputs.region }}
         run: |
           gcloud config set project ${{ inputs.project_name }}
         
