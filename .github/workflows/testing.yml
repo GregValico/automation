@@ -1,4 +1,4 @@
-name: Bootstrap GKE cluster
+name: Testing Scripts
 
 on:
   workflow_dispatch:
