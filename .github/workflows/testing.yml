@@ -1,4 +1,4 @@
-name: Testing Scripts
+name: Testing Scripts v2
 
 on:
   workflow_dispatch:
