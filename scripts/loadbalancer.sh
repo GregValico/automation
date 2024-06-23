@@ -4,6 +4,8 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   
   sleep 20
 
+  export PROXY_IP="${PROXY_IP}
+
   echo The api proxy IP is $PROXY_IP
 
   gcloud config set project $PROJECT_NAME
