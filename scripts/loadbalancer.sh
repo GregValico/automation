@@ -4,5 +4,7 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   
   sleep 20
 
-  echo $PROXY_IP
+  echo From inside the VM, the PROXY IP is $PROXY_IP
+  echo Cluster name is $CLUSTER_NAME
+  echo Project name is $PROJECT_NAME
 "
