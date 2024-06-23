@@ -36,12 +36,20 @@ jobs:
         run: |
           gcloud config set project ${{ inputs.project_name }}
 
-      - name: Describe Subnet 
+      - name: Create Static IP
+        run: |
+          gcloud config set project ${{ inputs.project_name }}
+          PROXY_IP=$(gcloud compute addresses describe api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --format="get(address)")
+          echo "PROXY_IP=$PROXY_IP" >> $GITHUB_ENV
+
+      - name: Create GKE Resources 
         env:
-          SUBNET_NAME: ${{ inputs.subnet_name }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+          CLUSTER_NAME: ${{ inputs.cluster_name }}
           REGION: ${{ inputs.region }}
+          PROXY_IP: ${{ env.PROXY_IP }}
         run: |
           gcloud config set project ${{ inputs.project_name }}
         
-          chmod +x scripts/vpc.sh
-          ./scripts/vpc.sh
+          chmod +x scripts/loadbalancer.sh
+          ./scripts/loadbalancer.sh

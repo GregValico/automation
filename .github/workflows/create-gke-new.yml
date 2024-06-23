@@ -47,7 +47,6 @@ jobs:
           ./scripts/runner-bootstrap.sh
 
       - name: Configure Variables
-        id: configure-variables
         run: |
           gcloud config set project ${{ inputs.project_name }}
           POD_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].rangeName)")
@@ -62,7 +61,6 @@ jobs:
           echo VPC name is $VPC_NAME
 
       - name: Create Static IP
-        id: create-static-ip
         run: |
           gcloud config set project ${{ inputs.project_name }}
           gcloud compute addresses create api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --subnet=${{ inputs.subnet_name }}
@@ -114,6 +112,4 @@ jobs:
 
           chmod +x scripts/loadbalancer.sh
           ./scripts/loadbalancer.sh
-            
-          sleep 10
           
