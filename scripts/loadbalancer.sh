@@ -8,7 +8,7 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   export CLUSTER_NAME='${{ env.CLUSTER_NAME }}'
   export PROJECT_NAME='${{ env.PROJECT_NAME }}'
 
-  echo $PROXY_IP
+  echo \$PROXY_IP
 
-  gcloud config set project $PROJECT_NAME
+  gcloud config set project \$PROJECT_NAME
 "
