@@ -49,12 +49,23 @@ jobs:
       - name: Configure Variables
         id: configure-variables
         run: |
+          gcloud config set project ${{ inputs.project_name }}
+          gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].rangeName)"
+          sleep 5
+          gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[1].rangeName)"
+          sleep 5
+          gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="value(network)" | awk -F'/' '{print $NF}'
+          sleep 5
           POD_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].rangeName)")
           SVC_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[1].rangeName)")
           VPC_NAME=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="value(network)" | awk -F'/' '{print $NF}')
           echo "POD_RANGE=$POD_RANGE" >> $GITHUB_ENV
           echo "SVC_RANGE=$SVC_RANGE" >> $GITHUB_ENV
           echo "VPC_NAME=$VPC_NAME" >> $GITHUB_ENV
+
+          echo $POD_RANGE
+          echo $SVC_RANGE
+          echo $VPC_NAME
 
       - name: Create Static IP
         id: create-static-ip
