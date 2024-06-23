@@ -62,7 +62,7 @@ jobs:
           gcloud config set project ${{ inputs.project_name }}
           gcloud compute addresses create api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --subnet=${{ inputs.subnet_name }}
           sleep 10
-          PROXY_IP=$(gcloud compute addresses describe create api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --format="get(address)")
+          PROXY_IP=$(gcloud compute addresses describe api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --format="get(address)")
           echo "PROXY_IP=$PROXY_IP" >> $GITHUB_ENV
 
 
