@@ -48,7 +48,7 @@ jobs:
           PROJECT_NAME: ${{ inputs.project_name }}
           CLUSTER_NAME: ${{ inputs.cluster_name }}
           REGION: ${{ inputs.region }}
-          PROXY_IP: ${{ steps.static-ip.outputs.PROXY_IP }}
+          PROXY_IP: ${{ env.PROXY_IP }}
         run: |
           gcloud config set project ${{ inputs.project_name }}
             echo "PROXY_IP=${{ env.PROXY_IP }}"

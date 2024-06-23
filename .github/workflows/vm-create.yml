@@ -22,7 +22,6 @@ on:
         type: choice
         default: e2-small
         options:
-          - ''
           - e2-medium
           - c2-standard-8
 
