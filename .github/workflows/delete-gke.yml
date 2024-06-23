@@ -9,9 +9,6 @@ on:
       cluster_name:
         description: 'Name of GKE cluster'
         required: true
-      subnet_name:
-        description: 'Node subnet name'
-        required: true
       region:
         description: 'Region of the GKE cluster'
         required: true
