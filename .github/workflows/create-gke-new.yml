@@ -78,9 +78,9 @@ jobs:
           REGION: ${{ inputs.region }}
           MACHINE_TYPE: ${{ inputs.machine_type }}
           SUBNET: ${{ inputs.subnet_name }}
-          POD_RANGE: ${{ steps.configure-variables.outputs.POD_RANGE }}
-          SVC_RANGE: ${{ steps.configure-variables.outputs.SVC_RANGE }}
-          VPC_NAME: ${{ steps.configure-variables.outputs.VPC_NAME }}
+          POD_RANGE: ${{ env.POD_RANGE }}
+          SVC_RANGE: ${{ env.SVC_RANGE }}
+          VPC_NAME: ${{ env.VPC_NAME }}
         run: |
           echo $POD_RANGE
           echo $SVC_RANGE
@@ -104,7 +104,7 @@ jobs:
           PROJECT_NAME: ${{ inputs.project_name }}
           CLUSTER_NAME: ${{ inputs.cluster_name }}
           REGION: ${{ inputs.region }}
-          PROXY_IP: ${{ steps.create-static-ip.outputs.PROXY_IP }}
+          PROXY_IP: ${{ env.PROXY_IP }}
         run: |
           sleep 60
           chmod +x scripts/jump-bootstrap.sh
