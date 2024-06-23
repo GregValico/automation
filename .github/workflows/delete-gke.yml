@@ -36,7 +36,7 @@ jobs:
       - name: Delete Resources
         run: |
           gcloud config set project ${{ inputs.project_name }} --quiet
-          # gcloud compute addresses delete api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --quiet
-          # gcloud compute instances delete gke-jump-${{ inputs.cluster_name }} --zone=${{ inputs.region }}-a --quiet
+          gcloud compute addresses delete api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --quiet
+          gcloud compute instances delete gke-jump-${{ inputs.cluster_name }} --zone=${{ inputs.region }}-a --quiet
 
           gcloud container clusters delete ${{ inputs.cluster_name }} --region=${{ inputs.region }} --quiet
