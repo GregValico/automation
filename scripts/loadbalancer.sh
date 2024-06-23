@@ -4,7 +4,5 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   
   sleep 20
 
-  export PROXY_IP='${{ env.PROXY_IP }}'
-
   echo $PROXY_IP
 "
