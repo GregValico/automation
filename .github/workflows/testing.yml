@@ -37,6 +37,7 @@ jobs:
           gcloud config set project ${{ inputs.project_name }}
 
       - name: Create Static IP
+        id: static-ip
         run: |
           gcloud config set project ${{ inputs.project_name }}
           PROXY_IP=$(gcloud compute addresses describe api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --format="get(address)")
@@ -47,7 +48,7 @@ jobs:
           PROJECT_NAME: ${{ inputs.project_name }}
           CLUSTER_NAME: ${{ inputs.cluster_name }}
           REGION: ${{ inputs.region }}
-          PROXY_IP: ${{ env.PROXY_IP }}
+          PROXY_IP: ${{ steps.static-ip.outputs.PROXY_IP }}
         run: |
           gcloud config set project ${{ inputs.project_name }}
         
