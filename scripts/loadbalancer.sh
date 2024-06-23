@@ -9,11 +9,4 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   echo Project name is $PROJECT_NAME
 
   gcloud container clusters get-credentials ${{ inputs.cluster_name }} --region ${{ inputs.region }} --project ${{ inputs.project_name }}
-
-  cat <<EOF | kubectl apply -f -
-  apiVersion: v1
-  kind: Namespace
-  metadata:
-    name: $PROJECT_NAME
-EOF
 "
