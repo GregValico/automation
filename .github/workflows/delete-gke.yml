@@ -1,0 +1,45 @@
+name: Delete GKE cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Name of the GCP Project'
+        required: true
+      cluster_name:
+        description: 'Name of GKE cluster'
+        required: true
+      subnet_name:
+        description: 'Node subnet name'
+        required: true
+      region:
+        description: 'Region of the GKE cluster'
+        required: true
+        type: choice
+        options:
+          - us-east4
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: 'latest'
+
+      - name: Install gcloud beta components
+        run: |
+          chmod +x scripts/runner-bootstrap.sh
+          ./scripts/runner-bootstrap.sh
+
+      - name: Delete Resources
+        run: |
+          gcloud config set project ${{ inputs.project_name }}
+          gcloud compute addresses delete api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }}
+          gcloud compute instances delete gke-jump-${{ inputs.cluster_name }} --zone=${{ inputs.region }}-a
+
+          gcloud container clusters delete ${{ inputs.cluster_name }} --region=${{ inputs.region }}
