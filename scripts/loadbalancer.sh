@@ -4,14 +4,14 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   
   sleep 20
 
-  export PROXY_IP='${{ env.PROXY_IP }}'
-  export CLUSTER_NAME='${{ env.CLUSTER_NAME }}'
-  export PROJECT_NAME='${{ env.PROJECT_NAME }}'
+  export PROXY_IP='${{ env.PROXY_IP }}'; \
+  export CLUSTER_NAME='${{ env.CLUSTER_NAME }}'; \
+  export PROJECT_NAME='${{ env.PROJECT_NAME }}'; \
 
-  echo The api proxy IP is $PROXY_IP
+  echo $PROXY_IP
 
-  gcloud config set project $PROJECT_NAME
-  gcloud container clusters get-credentials $CLUSTER_NAME --region=$REGION --project=$PROJECT_NAME
+  # gcloud config set project $PROJECT_NAME
+  # gcloud container clusters get-credentials $CLUSTER_NAME --region=$REGION --project=$PROJECT_NAME
   
   #   cat <<EOF | kubectl apply -f -
   #   apiVersion: v1
