@@ -3,7 +3,9 @@
 gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJECT_NAME" --command '
   
   sleep 20
-  
+
+  echo The api proxy IP is $PROXY_IP
+
   gcloud config set project $PROJECT_NAME
   gcloud container clusters get-credentials $CLUSTER_NAME --region=$REGION --project=$PROJECT_NAME
   
