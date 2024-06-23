@@ -16,7 +16,7 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   kind: Namespace
   metadata:
     name: $PROJECT_NAME
-  EOF
+EOF
 
 
 "
