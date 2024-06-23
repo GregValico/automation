@@ -51,6 +51,9 @@ jobs:
           PROXY_IP: ${{ steps.static-ip.outputs.PROXY_IP }}
         run: |
           gcloud config set project ${{ inputs.project_name }}
+            echo "PROXY_IP=${{ env.PROXY_IP }}"
+            echo "CLUSTER_NAME=${{ env.CLUSTER_NAME }}"
+            echo "PROJECT_NAME=${{ env.PROJECT_NAME }}"
         
           chmod +x scripts/loadbalancer.sh
           ./scripts/loadbalancer.sh
