@@ -82,6 +82,9 @@ jobs:
           SVC_RANGE: ${{ steps.configure-variables.outputs.SVC_RANGE }}
           VPC_NAME: ${{ steps.configure-variables.outputs.VPC_NAME }}
         run: |
+          echo $POD_RANGE
+          echo $SVC_RANGE
+          echo $VPC_NAME
           chmod +x scripts/create-cluster.sh
           ./scripts/create-cluster.sh
 
