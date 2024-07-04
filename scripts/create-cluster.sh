@@ -23,8 +23,8 @@ gcloud beta container --project "$PROJECT_NAME" clusters create "$CLUSTER_NAME" 
     --enable-ip-alias \
     --network "projects/$PROJECT_NAME/global/networks/$VPC_NAME" \
     --subnetwork "projects/$PROJECT_NAME/regions/$REGION/subnetworks/$SUBNET" \
-    --cluster-secondary-range-name "$POD_RANGE" \
-    --services-secondary-range-name "$SVC_RANGE" \
+    --cluster-secondary-range-name "$POD_RANGE_NAME" \
+    --services-secondary-range-name "$SVC_RANGE_NAME" \
     --no-enable-intra-node-visibility \
     --default-max-pods-per-node "30" \
     --enable-autoscaling --min-nodes "0" --max-nodes "1" \

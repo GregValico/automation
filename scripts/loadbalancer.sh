@@ -55,4 +55,64 @@ EOF
     selector:
       app: nginx
 EOF
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ip-masq-agent
+    namespace: kube-system
+  data:
+    config: |-
+      nonMasqueradeCIDRs:
+        - $POD_RANGE
+        - $SVC_RANGE
+      masqLinkLocal: false
+      resyncInterval: 30s
+EOF
+  cat <<EOF | kubectl apply -f -
+  apiVersion: apps/v1
+  kind: DaemonSet
+  metadata:
+    name: ip-masq-agent
+    namespace: kube-system
+  spec:
+    selector:
+      matchLabels:
+        k8s-app: ip-masq-agent
+    template:
+      metadata:
+        labels:
+          k8s-app: ip-masq-agent
+      spec:
+        hostNetwork: true
+        containers:
+        - name: ip-masq-agent
+          image: gke.gcr.io/ip-masq-agent:v2.9.3-gke.5@sha256:c75a164d6011c7da7084da0fddfc7419914025e092741c3c230cec1589a1a06b
+          args:
+          # The masq-chain must be IP-MASQ
+          - --masq-chain=IP-MASQ
+          # To non-masquerade reserved IP ranges by default,
+          # uncomment the following line.
+          # - --nomasq-all-reserved-ranges
+          securityContext:
+            privileged: false
+          volumeMounts:
+          - name: config-volume
+            mountPath: /etc/config
+        volumes:
+        - name: config-volume
+          configMap:
+            name: ip-masq-agent
+            optional: true
+            items:
+            - key: config
+              path: ip-masq-agent
+        tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+EOF
 "

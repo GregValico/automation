@@ -49,16 +49,22 @@ jobs:
       - name: Configure Variables
         run: |
           gcloud config set project ${{ inputs.project_name }}
-          POD_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].rangeName)")
-          SVC_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[1].rangeName)")
+          POD_RANGE_NAME=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].rangeName)")
+          SVC_RANGE_NAME=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[1].rangeName)")
           VPC_NAME=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="value(network)" | awk -F'/' '{print $NF}')
+          POD_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].ipCidrRange)")
+          SVC_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[1].ipCidrRange)")
+          echo "POD_RANGE_NAME=$POD_RANGE_NAME" >> $GITHUB_ENV
+          echo "SVC_RANGE_NAME=$SVC_RANGE_NAME" >> $GITHUB_ENV
+          echo "VPC_NAME=$VPC_NAME" >> $GITHUB_ENV
           echo "POD_RANGE=$POD_RANGE" >> $GITHUB_ENV
           echo "SVC_RANGE=$SVC_RANGE" >> $GITHUB_ENV
-          echo "VPC_NAME=$VPC_NAME" >> $GITHUB_ENV
 
-          echo Pod range name is $POD_RANGE
-          echo Service range name is $SVC_RANGE
+          echo Pod range name is $POD_RANGE_NAME
+          echo Service range name is $SVC_RANGE_NAME
           echo VPC name is $VPC_NAME
+          echo Pods range is $POD_RANGE
+          echo Services range is $SVC_RANGE
 
       - name: Create Static IP
         run: |
@@ -76,12 +82,12 @@ jobs:
           REGION: ${{ inputs.region }}
           MACHINE_TYPE: ${{ inputs.machine_type }}
           SUBNET: ${{ inputs.subnet_name }}
-          POD_RANGE: ${{ env.POD_RANGE }}
-          SVC_RANGE: ${{ env.SVC_RANGE }}
+          POD_RANGE_NAME: ${{ env.POD_RANGE_NAME }}
+          SVC_RANGE_NAME: ${{ env.SVC_RANGE_NAME }}
           VPC_NAME: ${{ env.VPC_NAME }}
         run: |
-          echo $POD_RANGE
-          echo $SVC_RANGE
+          echo $POD_RANGE_NAME
+          echo $SVC_RANGE_NAME
           echo $VPC_NAME
           chmod +x scripts/create-cluster.sh
           ./scripts/create-cluster.sh
@@ -103,6 +109,8 @@ jobs:
           CLUSTER_NAME: ${{ inputs.cluster_name }}
           REGION: ${{ inputs.region }}
           PROXY_IP: ${{ env.PROXY_IP }}
+          POD_RANGE: ${{ env.POD_RANGE }}
+          SVC_RANGE: ${{ env.SVC_RANGE }}
         run: |
           sleep 60
           chmod +x scripts/jump-bootstrap.sh
