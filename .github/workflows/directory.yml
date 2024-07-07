@@ -1,0 +1,25 @@
+name: Deploy GCP VM
+
+on:
+  workflow_dispatch:
+    inputs:
+      directory_name:
+        description: 'Name of the Folder to Create'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: 'latest'
+
+      - name: Create folder
+        run: |
+          mkdir -p ${{ inputs.directory_name }}
