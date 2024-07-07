@@ -1,4 +1,4 @@
-name: Deploy GCP VM
+name: Create Folder
 
 on:
   workflow_dispatch:
