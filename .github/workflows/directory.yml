@@ -25,7 +25,7 @@ jobs:
           mkdir -p ${{ inputs.directory_name }}
 
       - name: Push Changes
-      run: |
+        run: |
           git add . && git commit -m 'Pushed thru GHA' && git push
 
 
