@@ -23,5 +23,10 @@ jobs:
       - name: Clone Repo
         run: |
           git clone git@github.com:GregValico/gke_deploy.git
+          cd gke_deploy/
+          echo "Hello World" > new-file.txt
+          git commit -m "Added new file"
+          git remote set-url origin git@github.com:GregValico/automation.git
+          git push -u origin main
 
 
