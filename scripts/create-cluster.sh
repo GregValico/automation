@@ -5,7 +5,7 @@ gcloud config set project $PROJECT_NAME
 gcloud beta container --project "$PROJECT_NAME" clusters create "$CLUSTER_NAME" \
     --region "$REGION" \
     --no-enable-basic-auth \
-    --cluster-version "1.29.4-gke.1043002" \
+    --cluster-version "1.29.6-gke.1038001" \
     --release-channel "regular" \
     --machine-type "$MACHINE_TYPE" \
     --image-type "COS_CONTAINERD" \
