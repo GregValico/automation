@@ -94,8 +94,15 @@ jobs:
           echo $POD_RANGE_NAME
           echo $SVC_RANGE_NAME
           echo $VPC_NAME
-          chmod +x scripts/create-cluster.sh
-          ./scripts/create-cluster.sh
+          gcloud config set project ${{ inputs.project_name }}
+          EXISTING_CLUSTER=$(gcloud container clusters list --filter="name=${{ inputs.cluster_name }}" --format="get(name)")
+          if [ -z "$EXISTING_CLUSTER" ]; then
+            chmod +x scripts/create-cluster.sh
+            ./scripts/create-cluster.sh
+            echo "Cluster ${{ inputs.cluster_name }} created successfully."
+          else
+            echo "Cluster ${{ inputs.cluster_name }} already exists. Skipping creation."
+          fi
 
       - name: Depoloy GKE Jump Host
         env:
@@ -105,8 +112,14 @@ jobs:
           SUBNET: ${{ inputs.subnet_name }}
           GCP_SA: ${{ secrets.gcp_sa }}
         run: |
-          chmod +x scripts/create-jump.sh
-          ./scripts/create-jump.sh
+          JUMP_VM=$(gcloud compute instances list --filter="name=gke-jump-${{ inputs.cluster_name }}" --format="get(name)")
+          if [ -z "$JUMP_VM" ]; then
+            chmod +x scripts/create-jump.sh
+            ./scripts/create-jump.sh
+            echo "VM gke-jump-${{ inputs.cluster_name }} created successfully."
+          else
+            echo "VM gke-jump-${{ inputs.cluster_name }} already exists. Skipping creation."
+          fi
               
       - name: SSH and Install Jump Tools 
         env:
