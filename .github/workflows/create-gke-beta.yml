@@ -1,0 +1,127 @@
+name: New Deploy GKE cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Name of the GCP Project'
+        required: true
+      cluster_name:
+        description: 'Name of GKE cluster'
+        required: true
+      subnet_name:
+        description: 'Node subnet name'
+        required: true
+      region:
+        description: 'Region of the GKE cluster'
+        required: true
+        type: choice
+        options:
+          - us-east4
+      machine_type:
+        description: '(Optional) Node machine type'
+        required: false
+        type: choice
+        default: e2-small
+        options:
+          - ' '
+          - e2-medium
+          - c2-standard-8
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: 'latest'
+
+      - name: Install gcloud beta components
+        run: |
+          chmod +x scripts/runner-bootstrap.sh
+          ./scripts/runner-bootstrap.sh
+
+      - name: Configure Variables
+        run: |
+          gcloud config set project ${{ inputs.project_name }}
+          POD_RANGE_NAME=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].rangeName)")
+          SVC_RANGE_NAME=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[1].rangeName)")
+          VPC_NAME=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="value(network)" | awk -F'/' '{print $NF}')
+          POD_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[0].ipCidrRange)")
+          SVC_RANGE=$(gcloud compute networks subnets describe ${{ inputs.subnet_name }} --region=${{ inputs.region }} --format="get(secondaryIpRanges[1].ipCidrRange)")
+          echo "POD_RANGE_NAME=$POD_RANGE_NAME" >> $GITHUB_ENV
+          echo "SVC_RANGE_NAME=$SVC_RANGE_NAME" >> $GITHUB_ENV
+          echo "VPC_NAME=$VPC_NAME" >> $GITHUB_ENV
+          echo "POD_RANGE=$POD_RANGE" >> $GITHUB_ENV
+          echo "SVC_RANGE=$SVC_RANGE" >> $GITHUB_ENV
+
+          echo Pod range name is $POD_RANGE_NAME
+          echo Service range name is $SVC_RANGE_NAME
+          echo VPC name is $VPC_NAME
+          echo Pods range is $POD_RANGE
+          echo Services range is $SVC_RANGE
+
+      - name: Create Static IP
+        run: |
+          gcloud config set project ${{ inputs.project_name }}
+          EXISTING_IP=$(gcloud compute addresses list --filter="name=api-proxy-ip-${{ inputs.cluster_name }} AND region=${{ inputs.region }}" --format="get(address)")
+          if [ -z "$EXISTING_IP" ]; then
+            gcloud compute addresses create api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --subnet=${{ inputs.subnet_name }}
+            sleep 10
+            PROXY_IP=$(gcloud compute addresses describe api-proxy-ip-${{ inputs.cluster_name }} --region=${{ inputs.region }} --format="get(address)")
+          else
+            PROXY_IP=$EXISTING_IP
+          fi
+          echo "PROXY_IP=$PROXY_IP" >> $GITHUB_ENV
+
+
+      - name: Deploy GKE cluster
+        env:
+          PROJECT_NAME: ${{ inputs.project_name }}
+          CLUSTER_NAME: ${{ inputs.cluster_name }}
+          REGION: ${{ inputs.region }}
+          MACHINE_TYPE: ${{ inputs.machine_type }}
+          SUBNET: ${{ inputs.subnet_name }}
+          POD_RANGE_NAME: ${{ env.POD_RANGE_NAME }}
+          SVC_RANGE_NAME: ${{ env.SVC_RANGE_NAME }}
+          VPC_NAME: ${{ env.VPC_NAME }}
+        run: |
+          echo $POD_RANGE_NAME
+          echo $SVC_RANGE_NAME
+          echo $VPC_NAME
+          chmod +x scripts/create-cluster.sh
+          ./scripts/create-cluster.sh
+
+      - name: Depoloy GKE Jump Host
+        env:
+          PROJECT_NAME: ${{ inputs.project_name }}
+          CLUSTER_NAME: ${{ inputs.cluster_name }}
+          REGION: ${{ inputs.region }}
+          SUBNET: ${{ inputs.subnet_name }}
+          GCP_SA: ${{ secrets.gcp_sa }}
+        run: |
+          chmod +x scripts/create-jump.sh
+          ./scripts/create-jump.sh
+              
+      - name: SSH and Install Jump Tools 
+        env:
+          PROJECT_NAME: ${{ inputs.project_name }}
+          CLUSTER_NAME: ${{ inputs.cluster_name }}
+          REGION: ${{ inputs.region }}
+          PROXY_IP: ${{ env.PROXY_IP }}
+          POD_RANGE: ${{ env.POD_RANGE }}
+          SVC_RANGE: ${{ env.SVC_RANGE }}
+        run: |
+          sleep 60
+          chmod +x scripts/jump-bootstrap.sh
+          ./scripts/jump-bootstrap.sh
+
+          sleep 20
+
+          chmod +x scripts/loadbalancer.sh
+          ./scripts/loadbalancer.sh
