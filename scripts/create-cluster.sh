@@ -41,7 +41,6 @@ gcloud beta container --project "$PROJECT_NAME" clusters create "$CLUSTER_NAME" 
     --maintenance-window-end "2024-06-16T11:00:00Z" \
     --maintenance-window-recurrence "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU" \
     --binauthz-evaluation-mode=DISABLED \
-    --enable-managed-prometheus \
     --workload-pool "$PROJECT_NAME.svc.id.goog" \
     --enable-shielded-nodes \
     --verbosity=info
