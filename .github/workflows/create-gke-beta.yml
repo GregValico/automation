@@ -25,7 +25,7 @@ on:
         default: e2-small
 
 jobs:
-  configure-runner-variables:
+  deploy-resources:
     runs-on: self-hosted
 
     steps:
@@ -119,8 +119,8 @@ jobs:
             echo "VM gke-jump-${{ inputs.cluster_name }} already exists. Skipping creation."
           fi
 
-          
-      - name: SSH and Install Jump Tools 
+
+      - name: Bootstrap Cluster 
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
           CLUSTER_NAME: ${{ inputs.cluster_name }}
