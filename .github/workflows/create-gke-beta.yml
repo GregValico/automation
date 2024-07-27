@@ -62,11 +62,7 @@ jobs:
           echo Pods range is $POD_RANGE
           echo Services range is $SVC_RANGE
 
-  create-ip:
-    runs-on: self-hosted
-    needs: configure-runner-variables
 
-    steps:
       - name: Create Static IP
         run: |
           gcloud config set project ${{ inputs.project_name }}
@@ -81,11 +77,6 @@ jobs:
           echo "PROXY_IP=$PROXY_IP" >> $GITHUB_ENV
 
 
-  deploy-cluster:
-    runs-on: self-hosted
-    needs: create-ip
-    
-    steps:
       - name: Deploy GKE cluster
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
@@ -111,11 +102,6 @@ jobs:
           fi
 
 
-  deploy-jump:
-    runs-on: self-hosted
-    needs: deploy-cluster
-    
-    steps:
       - name: Depoloy GKE Jump Host
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
@@ -132,12 +118,8 @@ jobs:
           else
             echo "VM gke-jump-${{ inputs.cluster_name }} already exists. Skipping creation."
           fi
-       
-  bootstrap-cluster:
-    runs-on: self-hosted
-    needs: deploy-jump
-    
-    steps:
+
+          
       - name: SSH and Install Jump Tools 
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
