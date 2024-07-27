@@ -21,15 +21,11 @@ on:
       machine_type:
         description: '(Optional) Node machine type'
         required: false
-        type: choice
+        type: string
         default: e2-small
-        options:
-          - ' '
-          - e2-medium
-          - c2-standard-8
 
 jobs:
-  deploy:
+  configure-runner-variables:
     runs-on: self-hosted
 
     steps:
@@ -66,6 +62,10 @@ jobs:
           echo Pods range is $POD_RANGE
           echo Services range is $SVC_RANGE
 
+  create-ip:
+    runs-on: self-hosted
+
+    steps:
       - name: Create Static IP
         run: |
           gcloud config set project ${{ inputs.project_name }}
@@ -80,6 +80,10 @@ jobs:
           echo "PROXY_IP=$PROXY_IP" >> $GITHUB_ENV
 
 
+  deploy-cluster:
+    runs-on: self-hosted
+    
+    steps:
       - name: Deploy GKE cluster
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
@@ -104,6 +108,11 @@ jobs:
             echo "Cluster ${{ inputs.cluster_name }} already exists. Skipping creation."
           fi
 
+
+  deploy-jump:
+    runs-on: self-hosted
+    
+    steps:
       - name: Depoloy GKE Jump Host
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
@@ -120,7 +129,11 @@ jobs:
           else
             echo "VM gke-jump-${{ inputs.cluster_name }} already exists. Skipping creation."
           fi
-              
+       
+  bootstrap-cluster:
+    runs-on: self-hosted
+    
+    steps:
       - name: SSH and Install Jump Tools 
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
