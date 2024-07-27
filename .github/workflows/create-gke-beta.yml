@@ -64,6 +64,7 @@ jobs:
 
   create-ip:
     runs-on: self-hosted
+    needs: configure-runner-variables
 
     steps:
       - name: Create Static IP
@@ -82,6 +83,7 @@ jobs:
 
   deploy-cluster:
     runs-on: self-hosted
+    needs: create-ip
     
     steps:
       - name: Deploy GKE cluster
@@ -111,6 +113,7 @@ jobs:
 
   deploy-jump:
     runs-on: self-hosted
+    needs: deploy-cluster
     
     steps:
       - name: Depoloy GKE Jump Host
@@ -132,6 +135,7 @@ jobs:
        
   bootstrap-cluster:
     runs-on: self-hosted
+    needs: deploy-jump
     
     steps:
       - name: SSH and Install Jump Tools 
