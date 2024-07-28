@@ -57,11 +57,11 @@ EOF
     type: LoadBalancer
     loadBalancerIP: $PROXY_IP
     ports:
-    - port: 8118
+    - port: 443
       protocol: TCP
       targetPort: 8118
     selector:
-      run: k8s-api-proxy
+      app: k8s-api-proxy
 EOF
   cat <<EOF | kubectl apply -f -
   apiVersion: v1
