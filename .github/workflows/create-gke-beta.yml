@@ -114,6 +114,7 @@ jobs:
           if [ -z "$JUMP_VM" ]; then
             chmod +x scripts/create-jump.sh
             ./scripts/create-jump.sh
+            sleep 60
             echo "VM gke-jump-${{ inputs.cluster_name }} created successfully."
           else
             echo "VM gke-jump-${{ inputs.cluster_name }} already exists. Skipping creation."
@@ -129,7 +130,6 @@ jobs:
           POD_RANGE: ${{ env.POD_RANGE }}
           SVC_RANGE: ${{ env.SVC_RANGE }}
         run: |
-          sleep 60
           chmod +x scripts/jump-bootstrap.sh
           ./scripts/jump-bootstrap.sh
 
