@@ -57,7 +57,7 @@ EOF
     type: LoadBalancer
     loadBalancerIP: $PROXY_IP
     ports:
-    - port: 443
+    - port: 8118
       protocol: TCP
       targetPort: 8118
     selector:
