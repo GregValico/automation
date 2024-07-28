@@ -120,7 +120,7 @@ jobs:
           fi
 
 
-      - name: Bootstrap Cluster 
+      - name: Install api-proxy and DNS masq 
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
           CLUSTER_NAME: ${{ inputs.cluster_name }}
