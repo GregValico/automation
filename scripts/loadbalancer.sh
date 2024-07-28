@@ -10,50 +10,58 @@ gcloud compute ssh --zone "$REGION-a" "gke-jump-$CLUSTER_NAME" --project "$PROJE
   apiVersion: v1
   kind: Namespace
   metadata:
-    name: test
+    name: api-proxy
 EOF
   cat <<EOF | kubectl apply -f -
   apiVersion: apps/v1
   kind: Deployment
   metadata:
-    name: nginx-deployment
-    namespace: test
+    name: k8s-api-proxy
+    namespace: api-proxy
     labels:
-      app: nginx
+      app: k8s-api-proxy
   spec:
-    replicas: 3
+    replicas: 1
     selector:
       matchLabels:
-        app: nginx
+        app: k8s-api-proxy
     template:
       metadata:
         labels:
-          app: nginx
+          app: k8s-api-proxy
       spec:
         containers:
-        - name: nginx
-          image: nginx:latest
+        - name: k8s-api-proxy
+          image: maaand/k8s-api-proxy:v9
           ports:
-          - containerPort: 80
+          - containerPort: 8118
+          resources:
+            limits:
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
 EOF
   cat <<EOF | kubectl apply -f -
   apiVersion: v1
   kind: Service
   metadata:
-    name: nginx-service
-    namespace: test
+    name: k8s-api-proxy
+    namespace: api-proxy
     labels:
-      app: nginx
+      run: k8s-api-proxy
     annotations:
       cloud.google.com/load-balancer-type: "Internal"
   spec:
     type: LoadBalancer
     loadBalancerIP: $PROXY_IP
     ports:
-    - port: 80
-      targetPort: 80
+    - port: 8118
+      protocol: TCP
+      targetPort: 8118
     selector:
-      app: nginx
+      run: k8s-api-proxy
 EOF
   cat <<EOF | kubectl apply -f -
   apiVersion: v1
