@@ -31,7 +31,8 @@ gcloud beta container --project "$PROJECT_NAME" clusters create "$CLUSTER_NAME" 
     --location-policy "BALANCED" \
     --security-posture=standard \
     --workload-vulnerability-scanning=disabled \
-    --enable-master-authorized-networks \
+    --enable-network-policy \
+    --enable-master-authorized-networks --no-enable-gcp-public-cidrs-master-access \
     --addons HorizontalPodAutoscaling,GcePersistentDiskCsiDriver \
     --enable-autoupgrade \
     --enable-autorepair \
