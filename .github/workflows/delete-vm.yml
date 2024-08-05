@@ -42,7 +42,8 @@ jobs:
           echo "VM_ZONE=$VM_ZONE" >> $GITHUB_ENV
 
       - name: Delete VM instance
+        env:
+          VM_ZONE: ${{ env.VM_ZONE }}
         run: |
-          VM_ZONE=${{ env.VM_ZONE }}
           
-          gcloud compute instances delete ${{ inputs.vm_name }} --zone="$VM_ZONE" --quiet
+          gcloud compute instances delete ${{ inputs.vm_name }} --zone=${{ env.VM_ZONE }} --quiet
