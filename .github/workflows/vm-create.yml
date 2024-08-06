@@ -45,6 +45,7 @@ jobs:
 
       - name: Dry-Run VM instance
         run: |
+          # Adding "echo" here ensures the command will not actually run, but will print itself out instead
           echo gcloud compute instances create ${{ github.event.inputs.vm_name }} \
             --project=${{ github.event.inputs.project_name }} \
             --zone=${{ github.event.inputs.zone }} \
