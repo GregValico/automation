@@ -45,6 +45,7 @@ jobs:
 
       - name: Dry-Run VM instance
         run: |
+          mkdir ${{ github.event.inputs.project_name }}-${{ github.event.inputs.vm_name }}
           # Adding "echo" here ensures the command will not actually run, but will print itself out instead
           echo gcloud compute instances create ${{ github.event.inputs.vm_name }} \
             --project=${{ github.event.inputs.project_name }} \
@@ -61,7 +62,7 @@ jobs:
             --shielded-vtpm \
             --shielded-integrity-monitoring \
             --labels=goog-ec-src=vm_add-gcloud \
-            --reservation-affinity=any
+            --reservation-affinity=any > ${{ github.event.inputs.project_name }}-${{ github.event.inputs.vm_name }}/vm-${{ github.event.inputs.vm_name }}.txt
 
 
   ExecuteChanges:
