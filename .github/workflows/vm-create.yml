@@ -43,9 +43,9 @@ jobs:
         run: |
           gcloud config set project ${{ github.event.inputs.project_name }}
 
-      - name: Deploy VM instance
+      - name: Dry-Run VM instance
         run: |
-          gcloud compute instances create ${{ github.event.inputs.vm_name }} \
+          echo gcloud compute instances create ${{ github.event.inputs.vm_name }} \
             --project=${{ github.event.inputs.project_name }} \
             --zone=${{ github.event.inputs.zone }} \
             --machine-type=${{ github.event.inputs.machine_type }} \
@@ -60,8 +60,7 @@ jobs:
             --shielded-vtpm \
             --shielded-integrity-monitoring \
             --labels=goog-ec-src=vm_add-gcloud \
-            --reservation-affinity=any \
-            --dry-run
+            --reservation-affinity=any
 
 
   ExecuteChanges:
